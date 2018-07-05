@@ -187,7 +187,53 @@ def pre_clean_seq(text):
 #TODO: Join separated contraction tokens (like 'll, 's, and n't) to main words,
 #		join "can not", --> "cannot", etc.	
 def post_clean_seq(text):
-	raise NotImplementedError
+	text = re.sub(r"\s+", " ", text.strip())
+
+	#Expressions matching those from pre_clean_seq
+	#The extra comments are filler, marking a spot if we need to address one of those later
+	text = re.sub("will not", "won't", text)
+	text = re.sub(r"can not", "cannot", text)
+	#'ll
+	#'ve
+	#'d
+	#n't
+	#'bout
+	#'til
+	#&quot
+	#&amp
+	#HTML tags
+	#Ellipses
+
+	#Contraction suffixes
+	text = re.sub(r" 's", r"'s", text)
+	text = re.sub(r" n't", r"n't", text)
+	text = re.sub(r" 'll", r"'ll", text)
+	text = re.sub(r" 're", r"'re", text)
+	text = re.sub(r" 'd", r"'d", text)
+
+	#Needed for naturalness--no one says, "Do not you like coding?
+	text = re.sub(r"do not", r"don't", text) 
+	text = re.sub(r"does not", r"doesn't", text)
+	text = re.sub(r"are not", r"aren't", text)
+	text = re.sub(r"is not", "isn't", text)
+
+	#Punctuation
+	text = re.sub(r" \.", r".", text)
+	text = re.sub(r" \?", r"?", text)
+	text = re.sub(r" \!", r"!", text)
+	text = re.sub(r" ,", r",", text)
+	text = re.sub(r" *-+ *", r"-", text) #Strip hyphens/dashes of preceding and trailing whitespace
+
+	#Capitalization
+	text = text.capitalize() #Just capitalizes the very first character
+	text = re.sub(r" i ", r" I ", text)
+	text = re.sub(r"i'm", r"I'm", text)
+	text = re.sub(r"mr\.", r"Mr.", text)
+	text = re.sub(r"ms\.", r"Ms.", text)
+	text = re.sub(r"mrs\.",r"Mrs.", text)
+	text = re.sub(r"dr\.", r"Dr.", text)
+
+	return text
 
 _nlp = spacy.load("en_core_web_sm")
 _tokenizer = spacy.lang.en.English().Defaults.create_tokenizer(_nlp)
@@ -257,3 +303,14 @@ def replace_unknowns(sequences, vocab, unk):
 	"""
 	return [ [word if word in vocab else unk for word in sequence] for sequence in sequences ]
 
+if __name__ == "__main__":
+	seqs = ["ethan 's not ready !",
+		"i can not help dave 's monkey ...",
+		"This -- this sentence has many-- many -many dashes . do not you agree?",
+		"mr . james wants to play ! does not he ?",
+		"are not ye , mrs . simpson , ready ?",
+		"do not you like video games ?"
+		]
+	for seq in seqs:
+		print(seq, end=" --> ")
+		print( post_clean_seq(seq))
