@@ -218,6 +218,7 @@ def post_clean_seq(text):
 	text = re.sub(r"is not", "isn't", text)
 	text = re.sub(r"wo not", "won't", text)
 	text = re.sub(r"ai not", "ain't", text)
+	text = re.sub(r"gon na", "gonna", text) #Some tokenizers make that split
 
 	#Punctuation
 	text = re.sub(r" \.", r".", text)
