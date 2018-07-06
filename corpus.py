@@ -216,6 +216,8 @@ def post_clean_seq(text):
 	text = re.sub(r"does not", r"doesn't", text)
 	text = re.sub(r"are not", r"aren't", text)
 	text = re.sub(r"is not", "isn't", text)
+	text = re.sub(r"wo not", "won't", text)
+	text = re.sub(r"ai not", "ain't", text)
 
 	#Punctuation
 	text = re.sub(r" \.", r".", text)
@@ -225,7 +227,7 @@ def post_clean_seq(text):
 	text = re.sub(r" *-+ *", r"-", text) #Strip hyphens/dashes of preceding and trailing whitespace
 
 	#Capitalization
-	text = text.capitalize() #Just capitalizes the very first character
+	text = capitalize_sentences(text)
 	text = re.sub(r" i ", r" I ", text)
 	text = re.sub(r"i'm", r"I'm", text)
 	text = re.sub(r"mr\.", r"Mr.", text)
@@ -234,6 +236,12 @@ def post_clean_seq(text):
 	text = re.sub(r"dr\.", r"Dr.", text)
 
 	return text
+
+_first_letter_match = re.compile(r"(?<=[\.\?!] )(\w)")
+def capitalize_sentences(text):
+	text = text.capitalize()
+	cap = lambda match_obj: match_obj.group().capitalize()
+	return _first_letter_match.sub(cap, text)
 
 _nlp = spacy.load("en_core_web_sm")
 _tokenizer = spacy.lang.en.English().Defaults.create_tokenizer(_nlp)
@@ -307,7 +315,7 @@ if __name__ == "__main__":
 	seqs = ["ethan 's not ready !",
 		"i can not help dave 's monkey ...",
 		"This -- this sentence has many-- many -many dashes . do not you agree?",
-		"mr . james wants to play ! does not he ?",
+		"mr . james wants to play ! does not he ? you think so , right ?",
 		"are not ye , mrs . simpson , ready ?",
 		"do not you like video games ?"
 		]
