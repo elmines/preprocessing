@@ -10,7 +10,10 @@ import numpy as np #For shuffling data
 np.random.seed(1)
 
 #Local modules
-import testset
+if __name__ == "__main__":
+	import testset
+else:
+	from . import testset
 
 
 def preprocess(lines_path, conversations_path, min_line_length=1, max_line_length=60, prompts_path="./prompts.txt", answers_path="./answers.txt", verbose=True):
