@@ -222,6 +222,7 @@ def post_clean_seq(text):
 	text = re.sub(r"wo not", "won't", text)
 	text = re.sub(r"ai not", "ain't", text)
 	text = re.sub(r"gon na", "gonna", text) #Some tokenizers make that split
+	text = re.sub(r"i am", r"i'm", text)
 
 	#Punctuation
 	text = re.sub(r" \.", r".", text)
@@ -233,6 +234,7 @@ def post_clean_seq(text):
 	#Capitalization
 	text = capitalize_sentences(text)
 	text = re.sub(r" i ", r" I ", text)
+	text = re.sub(r" i$", r" I", text)
 	text = re.sub(r"i'm", r"I'm", text)
 	text = re.sub(r"mr\.", r"Mr.", text)
 	text = re.sub(r"ms\.", r"Ms.", text)
@@ -321,7 +323,9 @@ if __name__ == "__main__":
 		"This -- this sentence has many-- many -many dashes . do not you agree?",
 		"mr . james wants to play ! does not he ? you think so , right ?",
 		"are not ye , mrs . simpson , ready ?",
-		"do not you like video games ?"
+		"do not you like video games ?",
+		"i i i",
+		"well , i am not ready !"
 		]
 	for seq in seqs:
 		print(seq, end=" --> ")
