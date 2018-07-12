@@ -229,6 +229,8 @@ def post_clean_seq(text):
 	text = re.sub(r" \?", r"?", text)
 	text = re.sub(r" \!", r"!", text)
 	text = re.sub(r" ,", r",", text)
+	text = re.sub(r" ;", r";", text)
+	text = re.sub(r" :", r":", text)
 	text = re.sub(r" *-+ *", r"-", text) #Strip hyphens/dashes of preceding and trailing whitespace
 
 	#Capitalization
@@ -325,7 +327,8 @@ if __name__ == "__main__":
 		"are not ye , mrs . simpson , ready ?",
 		"do not you like video games ?",
 		"i i i",
-		"well , i am not ready !"
+		"well , i am not ready !",
+		"well , then : do you like punctuation like i do ? no is wrong ; ya know ?"
 		]
 	for seq in seqs:
 		print(seq, end=" --> ")
