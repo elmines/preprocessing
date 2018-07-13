@@ -10,7 +10,8 @@ import numpy as np #For shuffling data
 np.random.seed(1)
 
 #Local modules
-if __name__ == "__main__":
+if os.path.basename(sys.argv[0]) in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+	#Script executed from within the module
 	import testset
 else:
 	from . import testset
@@ -319,17 +320,3 @@ def replace_unknowns(sequences, vocab, unk):
 	"""
 	return [ [word if word in vocab else unk for word in sequence] for sequence in sequences ]
 
-if __name__ == "__main__":
-	seqs = ["ethan 's not ready !",
-		"i can not help dave 's monkey ...",
-		"This -- this sentence has many-- many -many dashes . do not you agree?",
-		"mr . james wants to play ! does not he ? you think so , right ?",
-		"are not ye , mrs . simpson , ready ?",
-		"do not you like video games ?",
-		"i i i",
-		"well , i am not ready !",
-		"well , then : do you like punctuation like i do ? no is wrong ; ya know ?"
-		]
-	for seq in seqs:
-		print(seq, end=" --> ")
-		print( post_clean_seq(seq))
