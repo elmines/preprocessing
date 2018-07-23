@@ -6,6 +6,7 @@ Usage: `python sheets --in raw.xlsx postprocessed.xlsx`
 import sys
 import os
 import argparse
+import re
 
 import pandas as pd
 
@@ -22,10 +23,22 @@ def create_parser():
 	parser.add_argument("--output", "-o", metavar="out.xlsx", default="out.xlsx", help="Path to outputted spreadsheet (default \"out.xlsx\")")
 
 	parser.add_argument("--postprocess", "--post", action="store_true", help="Apply postprocessing to text")
+	parser.add_argument("--no-punct", action="store_true", help="Remove all punctuation marks from text")
 	parser.add_argument("--unique", "-u", action="store_true", help="Exclude duplicate prompts")
 
 	return parser
 
+
+def default_text_cols(df):
+	labels = df.columns
+	substrings = ["prompt", "question", "input" "response", "answer", "target", "beam", "prediction"]
+	cols = []
+	for label in labels:
+		for substring in substrings:
+			if substring in label:
+				cols.append(label)
+				break
+	return cols
 
 def postprocess(df, cols=None, clean_fn=None):
 	"""
@@ -37,24 +50,19 @@ def postprocess(df, cols=None, clean_fn=None):
 	:rtype pd.DataFrame
 	"""
 
-	if cols is None:
-		labels = df.columns
-		substrings = ["prompt", "question", "input" "response", "answer", "target", "beam", "prediction"]
-		cols = []
-		for label in labels:
-			for substring in substrings:
-				if substring in label:
-					cols.append(label)
-					break
-		if len(cols) < 1:
-			raise ValueError("Could not find columns to clean--try providing them yourself.")
-	if clean_fn is None: clean_fn = corpus.post_clean_seq
-
+	if cols is None: cols = default_text_cols(df)
+	if len(cols) < 1: raise ValueError("Could not find columns to clean--try providing them yourself.")
 	sys.stderr.write("Cleaning columns {}\n".format(cols))
 
+	if clean_fn is None: clean_fn = corpus.post_clean_seq
 	for col in cols:
 		df[col] = df[col].apply(clean_fn)
+
 	return df
+
+
+def remove_punct(df, cols=None):
+	return postprocess(df, cols=cols, clean_fn=_punct_filters)	
 
 def trim(df, col=None):
 	"""
@@ -75,11 +83,24 @@ def trim(df, col=None):
 	df_trimmed = df.iloc[indices]
 	return df_trimmed
 
+def _punct_filters(text):
+	"""
+	:param str text: Single string to clean
+
+	:returns text with all punctuation removed
+	:rtype str
+	"""
+	#Don't sub apostrophes, lest we ruin contractions
+	text = re.sub(r"[\.\?\!,;:]", " ", text)
+	text = re.sub(r"\s+", " ", text)
+	text = text.strip()
+	return text
+
 if __name__ == "__main__":
 	parser = create_parser()
 	args = parser.parse_args()
 
-	transformations = [args.postprocess, args.unique]
+	transformations = [args.postprocess, args.no_punct, args.unique]
 	if sum(transformations) != 1:
 		print("Must specify exactly one transformation: --postprocess, --unique")
 		sys.exit(0)
@@ -87,6 +108,8 @@ if __name__ == "__main__":
 	df = pd.read_excel(args.input)
 	if args.postprocess:	
 		df_trans = postprocess(df)
+	elif args.no_punct:
+		df_trans = remove_punct(df)
 	elif args.unique:
 		df_trans = trim(df)
 
