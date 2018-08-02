@@ -1,7 +1,5 @@
 """
-Module for postprocessing spreadsheets
-
-Usage: `python sheets --in raw.xlsx postprocessed.xlsx`
+Module/script for postprocessing spreadsheets
 """
 import sys
 import os
@@ -17,6 +15,12 @@ else:
 	from . import corpus
 
 def create_parser():
+	"""
+	Generates the parser for parsing command-line arguments
+
+	:returns: The parser
+	:rtype: argparse.ArgumentParser
+	"""
 	parser = argparse.ArgumentParser(description="Apply a transformation to a dialogue spreadsheet produced by testest.py, EmotChatbot, etc.")
 
 	parser.add_argument("--input", "-i", metavar="in.xlsx", required=True, help="Path to spreadsheet to transform")
@@ -30,6 +34,14 @@ def create_parser():
 
 
 def default_text_cols(df):
+	"""
+	Attempts to find columns in a dataframe that probably contain text sequences
+
+	:param pd.DataFrame df: The dataframe
+
+	:returns: A list of columns in df that may have text
+	:rtype:   list(str)
+	"""
 	labels = df.columns
 	substrings = ["prompt", "question", "input" "response", "answer", "target", "beam", "prediction"]
 	cols = []
@@ -42,12 +54,12 @@ def default_text_cols(df):
 
 def postprocess(df, cols=None, clean_fn=None):
 	"""
-	:param pd.DataFrame df: DataFrame with the text to be postprocessed
-	:param list(str) cols: Columns of dataframe to clean. If not provided, have the function infers which to clean.
-	:param (str) -> (str) clean_fn: Function for postprocessing a single string (default is corpus.post_clean_seq)
+	:param pd.DataFrame       df: DataFrame with the text to be postprocessed
+	:param list(str)        cols: Columns of dataframe to clean. If not provided, have the function infers which to clean.
+	:param callable     clean_fn: Postprocessing function with signature clean_fn(str) -> str (default is :py:func:`corpus.post_clean_seq`)
 
-	:return The dataframe with the cleaned data
-	:rtype pd.DataFrame
+	:return: The dataframe with the cleaned data
+	:rtype:  pd.DataFrame
 	"""
 
 	if cols is None: cols = default_text_cols(df)
@@ -62,15 +74,22 @@ def postprocess(df, cols=None, clean_fn=None):
 
 
 def remove_punct(df, cols=None):
+	"""
+	:param pd.DataFrame       df: DataFrame with the text to be postprocessed
+	:param list(str)        cols: Columns of dataframe to clean. If not provided, have the function infers which to clean.
+
+	:return: The dataframe with the cleaned data
+	:rtype:  pd.DataFrame
+	"""
 	return postprocess(df, cols=cols, clean_fn=_punct_filters)	
 
 def trim(df, col=None):
 	"""
 	:param pd.DataFrame df: DataFrame with text to be processed
-	:param str col: Column used to identify duplicate rows (default \"indexes\")
+	:param str          col: Column used to identify duplicate rows (default \"indexes\")
 	
-	:returns The dataframe with the filtered data
-	:rtype pd.DataFrame
+	:returns: The dataframe with the filtered data
+	:rtype: pd.DataFrame
 	"""
 
 	if col is None: col = "indexes"
@@ -87,8 +106,8 @@ def _punct_filters(text):
 	"""
 	:param str text: Single string to clean
 
-	:returns text with all punctuation removed
-	:rtype str
+	:returns: text with all punctuation removed
+	:rtype: str
 	"""
 	#Don't sub apostrophes, lest we ruin contractions
 	text = re.sub(r"[\.\?\!,;:]", " ", text)
